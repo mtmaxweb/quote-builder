@@ -1,9 +1,7 @@
 import React from "react"
 import ReactDOM from "react-dom"
 import App from "./App"
-import "./index.css"
 
-// Export the initialization function for WordPress
 window.ReactQuoteBuilder = {
   default: (element) => {
     ReactDOM.render(
