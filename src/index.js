@@ -1,12 +1,22 @@
 import React from "react"
-import ReactDOM from "react-dom/client"
-import "./index.css"
+import ReactDOM from "react-dom"
 import App from "./App"
+import "./index.css"
 
-const root = ReactDOM.createRoot(document.getElementById("root"))
-root.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>,
-)
+// Export the initialization function for WordPress
+window.ReactQuoteBuilder = {
+  default: (element) => {
+    ReactDOM.render(
+      <React.StrictMode>
+        <App />
+      </React.StrictMode>,
+      element,
+    )
+  },
+}
+
+// If we're not in WordPress, initialize directly
+if (document.getElementById("root")) {
+  window.ReactQuoteBuilder.default(document.getElementById("root"))
+}
 
