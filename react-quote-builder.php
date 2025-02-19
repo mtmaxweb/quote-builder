@@ -12,40 +12,76 @@ if (!defined('ABSPATH')) {
 
 function enqueue_react_quote_builder() {
     $plugin_url = plugin_dir_url(__FILE__);
-    $build_dir = $plugin_url . 'build/_next/static/';
-
-    // Find the main JS file
-    $js_files = glob(plugin_dir_path(__FILE__) . 'build/_next/static/js/*.js');
-    if (!empty($js_files)) {
-        $js_file = basename(end($js_files));
+    
+    // Get the build directory path
+    $build_dir = plugin_dir_path(__FILE__) . 'build/_next/static/';
+    
+    // Find the JS directory (it has a dynamic hash name)
+    $js_dirs = glob($build_dir . '[A-Za-z0-9]*', GLOB_ONLYDIR);
+    $js_dir_name = basename(end($js_dirs)); // Get the last directory name
+    
+    // Enqueue the framework JS
+    $framework_files = glob($build_dir . 'chunks/framework-*.js');
+    if (!empty($framework_files)) {
+        $framework_file = basename(end($framework_files));
         wp_enqueue_script(
-            'react-quote-builder-js',
-            $build_dir . 'js/' . $js_file,
+            'react-quote-builder-framework',
+            $plugin_url . 'build/_next/static/chunks/' . $framework_file,
             array(),
             '1.0.0',
             true
         );
     }
 
-    // Find the main CSS file
-    $css_files = glob(plugin_dir_path(__FILE__) . 'build/_next/static/css/*.css');
-    if (!empty($css_files)) {
-        $css_file = basename(end($css_files));
-        wp_enqueue_style(
-            'react-quote-builder-css',
-            $build_dir . 'css/' . $css_file,
-            array(),
-            '1.0.0'
+    // Enqueue the main JS
+    $main_files = glob($build_dir . 'chunks/main-*.js');
+    if (!empty($main_files)) {
+        $main_file = basename(end($main_files));
+        wp_enqueue_script(
+            'react-quote-builder-main',
+            $plugin_url . 'build/_next/static/chunks/' . $main_file,
+            array('react-quote-builder-framework'),
+            '1.0.0',
+            true
         );
     }
 
-    wp_add_inline_script('react-quote-builder-js', '
+    // Enqueue additional chunks if they exist
+    $chunk_files = glob($build_dir . $js_dir_name . '/*.js');
+    if (!empty($chunk_files)) {
+        foreach ($chunk_files as $chunk_file) {
+            $chunk_name = basename($chunk_file);
+            wp_enqueue_script(
+                'react-quote-builder-' . $chunk_name,
+                $plugin_url . 'build/_next/static/' . $js_dir_name . '/' . $chunk_name,
+                array('react-quote-builder-main'),
+                '1.0.0',
+                true
+            );
+        }
+    }
+
+    // Enqueue the CSS
+    $css_files = glob($build_dir . 'css/*.css');
+    if (!empty($css_files)) {
+        foreach ($css_files as $css_file) {
+            $css_name = basename($css_file);
+            wp_enqueue_style(
+                'react-quote-builder-' . $css_name,
+                $plugin_url . 'build/_next/static/css/' . $css_name,
+                array(),
+                '1.0.0'
+            );
+        }
+    }
+
+    wp_add_inline_script('react-quote-builder-main', '
         function initReactQuoteBuilder() {
             var element = document.getElementById("react-quote-builder");
             if (element && window.ReactQuoteBuilder && window.ReactQuoteBuilder.default) {
                 window.ReactQuoteBuilder.default(element);
             } else {
-                console.error("React Quote Builder: Initialization failed. Element or ReactQuoteBuilder not found.");
+                console.error("React Quote Builder: Initialization failed.");
                 console.log("Element:", element);
                 console.log("ReactQuoteBuilder:", window.ReactQuoteBuilder);
             }
@@ -65,15 +101,4 @@ function react_quote_builder_shortcode() {
     return '<div id="react-quote-builder" class="react-quote-builder-container"></div>';
 }
 add_shortcode('react_quote_builder', 'react_quote_builder_shortcode');
-
-add_action('wp_footer', function() {
-    ?>
-    <script>
-    console.log('ReactQuoteBuilder object:', window.ReactQuoteBuilder);
-    console.log('Quote builder element:', document.getElementById('react-quote-builder'));
-    console.log('Main script loaded:', !!document.querySelector('script[src*="_next/static/js"]'));
-    console.log('Main style loaded:', !!document.querySelector('link[href*="_next/static/css"]'));
-    </script>
-    <?php
-});
 
