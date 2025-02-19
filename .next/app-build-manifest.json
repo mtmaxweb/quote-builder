@@ -1,0 +1,26 @@
+{
+  "pages": {
+    "/_not-found": [
+      "static/js/webpack.js",
+      "static/js/fd9d1056.js",
+      "static/js/472.js",
+      "static/js/main-app.js",
+      "static/js/app/_not-found.js"
+    ],
+    "/layout": [
+      "static/js/webpack.js",
+      "static/js/fd9d1056.js",
+      "static/js/472.js",
+      "static/js/main-app.js",
+      "static/css/6bbf4786725c1d59.css",
+      "static/js/app/layout.js"
+    ],
+    "/test/page": [
+      "static/js/webpack.js",
+      "static/js/fd9d1056.js",
+      "static/js/472.js",
+      "static/js/main-app.js",
+      "static/js/app/test/page.js"
+    ]
+  }
+}
